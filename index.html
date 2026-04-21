@@ -3,420 +3,749 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>マイページ</title>
+<title>マイページ — wellinte</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;1,9..144,300&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap');
+:root {
+  --bg: #f5f4f0;
+  --surface: #ffffff;
+  --surface2: #faf9f6;
+  --border: #e4e2d9;
+  --border2: #d4d2c9;
+  --text: #1c1b18;
+  --muted: #6e6c63;
+  --hint: #9e9c93;
+  --accent: #1a4731;
+  --accent-mid: #2d6e4f;
+  --accent-light: #e6f0eb;
+  --accent-pale: #f0f7f3;
+  --danger: #8b2020;
+  --danger-light: #fdf0f0;
+  --warning: #7a5010;
+  --warning-light: #fdf5e6;
+  --radius: 10px;
+  --radius-sm: 6px;
+}
 
-  :root {
-    --bg: #f4f3ef;
-    --surface: #ffffff;
-    --border: #e2e0d8;
-    --text: #1a1917;
-    --muted: #6b6860;
-    --accent: #2d5a3d;
-    --accent-light: #e8f0eb;
-    --danger: #8b2e2e;
-    --danger-light: #f5e8e8;
-    --warning: #7a5c1e;
-    --warning-light: #fdf3e0;
-    --radius: 8px;
-  }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Noto Sans JP', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.65;
+}
 
-  body {
-    font-family: 'Noto Sans JP', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    font-size: 14px;
-    line-height: 1.6;
-  }
+/* ── Header ── */
+header {
+  background: var(--accent);
+  padding: 0 28px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
 
-  header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 16px 24px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
+.logo {
+  font-family: 'Fraunces', serif;
+  font-size: 18px;
+  font-weight: 300;
+  color: #fff;
+  letter-spacing: 0.04em;
+}
 
-  .logo {
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    color: var(--accent);
-  }
+.logo span {
+  font-style: italic;
+  opacity: 0.7;
+  font-size: 12px;
+  margin-left: 10px;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: 300;
+}
 
-  .logo-sep { color: var(--border); margin: 0 4px; }
+/* ── Layout ── */
+main {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 36px 20px 80px;
+}
 
-  .header-title {
-    font-size: 13px;
-    color: var(--muted);
-    font-weight: 400;
-  }
+/* ── Auth / Loading ── */
+#auth-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  text-align: center;
+  gap: 12px;
+}
 
-  main {
-    max-width: 780px;
-    margin: 0 auto;
-    padding: 32px 20px 64px;
-  }
+#auth-screen h2 {
+  font-family: 'Fraunces', serif;
+  font-weight: 300;
+  font-size: 22px;
+  color: var(--accent);
+}
 
-  #auth-screen {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 60vh;
-    text-align: center;
-    gap: 16px;
-  }
+#auth-screen p { color: var(--muted); font-size: 13px; }
 
-  #auth-screen h2 { font-size: 18px; font-weight: 500; }
-  #auth-screen p { color: var(--muted); font-size: 13px; }
+#loading-screen {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  gap: 16px;
+}
 
-  #loading-screen {
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 60vh;
-    gap: 16px;
-  }
+.spinner {
+  width: 28px; height: 28px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { color: var(--muted); font-size: 13px; }
 
-  .spinner {
-    width: 32px; height: 32px;
-    border: 2px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+#content { display: none; }
 
-  #content { display: none; }
+/* ── Welcome ── */
+.welcome {
+  margin-bottom: 32px;
+}
 
-  .welcome {
-    margin-bottom: 28px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--border);
-  }
+.welcome-name {
+  font-family: 'Fraunces', serif;
+  font-size: 26px;
+  font-weight: 300;
+  color: var(--accent);
+  margin-bottom: 2px;
+}
 
-  .welcome h1 { font-size: 20px; font-weight: 500; margin-bottom: 4px; }
-  .welcome p { color: var(--muted); font-size: 13px; }
+.welcome-sub { color: var(--muted); font-size: 13px; }
 
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    margin-bottom: 16px;
-    overflow: hidden;
-  }
+/* ── Plan bar ── */
+.plan-bar {
+  background: var(--accent);
+  border-radius: var(--radius);
+  padding: 18px 22px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
 
-  .card-header {
-    padding: 14px 20px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+.plan-bar-left { display: flex; flex-direction: column; gap: 2px; }
 
-  .card-header h2 {
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-  }
+.plan-label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.55);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
 
-  .card-icon { font-size: 14px; }
-  .card-body { padding: 20px; }
+.plan-name {
+  font-size: 16px;
+  font-weight: 500;
+  color: #fff;
+}
 
-  .info-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-  }
+.plan-bar-right { display: flex; align-items: center; gap: 20px; }
 
-  @media (max-width: 500px) {
-    .info-grid { grid-template-columns: 1fr; }
-  }
+.plan-stat { text-align: center; }
 
-  .info-item label {
-    display: block;
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    margin-bottom: 4px;
-  }
+.plan-stat-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 22px;
+  color: #fff;
+  line-height: 1;
+}
 
-  .info-item .value {
-    font-size: 14px;
-    font-weight: 500;
-    font-family: 'DM Mono', monospace;
-  }
+.plan-stat-num span {
+  font-size: 13px;
+  opacity: 0.55;
+  margin-left: 2px;
+}
 
-  .badge {
-    display: inline-block;
-    padding: 2px 10px;
-    border-radius: 100px;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-  }
+.plan-stat-label {
+  font-size: 10px;
+  color: rgba(255,255,255,0.5);
+  margin-top: 2px;
+  letter-spacing: 0.05em;
+}
 
-  .badge-active { background: var(--accent-light); color: var(--accent); }
-  .badge-error { background: var(--danger-light); color: var(--danger); }
-  .badge-warning { background: var(--warning-light); color: var(--warning); }
-  .badge-neutral { background: var(--border); color: var(--muted); }
+.plan-divider {
+  width: 1px;
+  height: 32px;
+  background: rgba(255,255,255,0.2);
+}
 
-  .url-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+/* URL枠ゲージ */
+.url-gauge {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 120px;
+}
 
-  .url-item {
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 12px 14px;
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
-  }
+.url-gauge-label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.55);
+  display: flex;
+  justify-content: space-between;
+}
 
-  .url-item-info { flex: 1; min-width: 0; }
+.url-gauge-bar {
+  height: 4px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 2px;
+  overflow: hidden;
+}
 
-  .url-name {
-    font-size: 13px;
-    font-weight: 500;
-    margin-bottom: 2px;
-  }
+.url-gauge-fill {
+  height: 100%;
+  background: #fff;
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
 
-  .url-addr {
-    font-size: 11px;
-    color: var(--muted);
-    font-family: 'DM Mono', monospace;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+/* ── Section title ── */
+.section-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
 
-  .form-group { margin-bottom: 14px; }
+/* ── Card ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
 
-  .form-group label {
-    display: block;
-    font-size: 12px;
-    color: var(--muted);
-    margin-bottom: 6px;
-    font-weight: 500;
-  }
+.card-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 
-  .form-group input,
-  .form-group textarea {
-    width: 100%;
-    padding: 9px 12px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    font-size: 13px;
-    font-family: 'Noto Sans JP', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    outline: none;
-    transition: border-color 0.15s;
-  }
+.card-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
-  .form-group input:focus,
-  .form-group textarea:focus {
-    border-color: var(--accent);
-  }
+.card-header h2 {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
 
-  .form-group textarea { resize: vertical; min-height: 80px; }
+.card-body { padding: 20px; }
 
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 9px 18px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 500;
-    font-family: 'Noto Sans JP', sans-serif;
-    cursor: pointer;
-    border: none;
-    transition: opacity 0.15s;
-  }
+/* ── Info grid ── */
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
 
-  .btn:hover { opacity: 0.85; }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .btn-primary { background: var(--accent); color: #fff; }
+@media (max-width: 480px) {
+  .info-grid { grid-template-columns: 1fr; }
+}
 
-  .notice {
-    padding: 10px 14px;
-    border-radius: 6px;
-    font-size: 12px;
-    margin-bottom: 14px;
-  }
+.info-item label {
+  display: block;
+  font-size: 10px;
+  color: var(--hint);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
 
-  .notice-info { background: var(--accent-light); color: var(--accent); }
-  .notice-success { background: var(--accent-light); color: var(--accent); }
-  .notice-error { background: var(--danger-light); color: var(--danger); }
+.info-item .value {
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'DM Mono', monospace;
+}
 
-  .empty { color: var(--muted); font-size: 13px; text-align: center; padding: 24px 0; }
+/* ── Badge ── */
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+.badge-active { background: var(--accent-light); color: var(--accent); }
+.badge-error { background: var(--danger-light); color: var(--danger); }
+.badge-warning { background: var(--warning-light); color: var(--warning); }
+.badge-neutral { background: var(--border); color: var(--muted); }
 
-  .tabs {
-    display: flex;
-    gap: 2px;
-    background: var(--border);
-    padding: 3px;
-    border-radius: 8px;
-    margin-bottom: 16px;
-  }
+/* ── URL list ── */
+.url-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
 
-  .tab {
-    flex: 1;
-    padding: 8px;
-    text-align: center;
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    border-radius: 6px;
-    color: var(--muted);
-    transition: all 0.15s;
-    border: none;
-    background: transparent;
-    font-family: 'Noto Sans JP', sans-serif;
-  }
+.url-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--surface2);
+  transition: border-color 0.15s;
+}
 
-  .tab.active {
-    background: var(--surface);
-    color: var(--text);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-  }
+.url-item:hover { border-color: var(--border2); }
 
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
+.url-item-info { flex: 1; min-width: 0; }
 
-  .mail-display {
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    padding: 9px 12px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-  }
+.url-name {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.url-addr {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.url-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-delete {
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  color: var(--muted);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  font-size: 11px;
+  font-family: 'Noto Sans JP', sans-serif;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-delete:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+  background: var(--danger-light);
+}
+
+.btn-delete:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Add URL section ── */
+.add-url-section { margin-top: 0; }
+
+.url-input-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.url-input-row input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: 'DM Mono', monospace;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.url-input-row input:focus { border-color: var(--accent-mid); }
+.url-input-row input::placeholder { color: var(--hint); font-family: 'Noto Sans JP', sans-serif; }
+
+/* OGP preview */
+.ogp-preview {
+  display: none;
+  border: 1px solid var(--accent-light);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  background: var(--accent-pale);
+  margin-bottom: 12px;
+  gap: 10px;
+  align-items: center;
+}
+
+.ogp-preview.visible { display: flex; }
+
+.ogp-icon {
+  width: 32px; height: 32px;
+  background: var(--accent-light);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 14px;
+}
+
+.ogp-info { flex: 1; min-width: 0; }
+
+.ogp-site-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--accent);
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ogp-url {
+  font-size: 11px;
+  color: var(--accent-mid);
+  font-family: 'DM Mono', monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.7;
+}
+
+/* Btn */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Noto Sans JP', sans-serif;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+}
+
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-mid); }
+.btn-secondary {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border2);
+}
+.btn-secondary:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+
+/* Notice */
+.notice {
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+.notice-info { background: var(--accent-pale); color: var(--accent); border: 1px solid var(--accent-light); }
+.notice-success { background: var(--accent-pale); color: var(--accent); border: 1px solid var(--accent-light); }
+.notice-error { background: var(--danger-light); color: var(--danger); border: 1px solid #f5c6c6; }
+.notice-warning { background: var(--warning-light); color: var(--warning); border: 1px solid #f5deb3; }
+
+.empty { color: var(--hint); font-size: 13px; text-align: center; padding: 28px 0; }
+
+/* ── Mail display ── */
+.mail-display {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  padding: 10px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+}
+
+/* ── Request form ── */
+.tabs {
+  display: flex;
+  gap: 2px;
+  background: var(--border);
+  padding: 3px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.tab {
+  flex: 1;
+  padding: 7px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 6px;
+  color: var(--muted);
+  transition: all 0.15s;
+  border: none;
+  background: transparent;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+.tab.active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+}
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+.form-group { margin-bottom: 14px; }
+
+.form-group label {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: 'Noto Sans JP', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus { border-color: var(--accent-mid); }
+.form-group textarea { resize: vertical; min-height: 80px; }
+
+/* limit warning */
+.limit-reached {
+  text-align: center;
+  padding: 20px;
+  color: var(--warning);
+  font-size: 13px;
+}
+
+/* ── Confirm dialog ── */
+.overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.overlay.visible { display: flex; }
+
+.dialog {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 24px;
+  max-width: 380px;
+  width: 100%;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+}
+
+.dialog h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.dialog p {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.dialog-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+@media (max-width: 500px) {
+  .plan-bar { flex-direction: column; align-items: flex-start; }
+  .url-input-row { flex-direction: column; }
+}
 </style>
 </head>
 <body>
 
 <header>
-  <span class="logo">行政情報監視</span>
-  <span class="logo-sep">|</span>
-  <span class="header-title">マイページ</span>
+  <div class="logo">wellinte <span>マイページ</span></div>
 </header>
 
 <main>
 
   <div id="auth-screen">
-    <div style="font-size:32px">🔒</div>
-    <h2>アクセストークンが必要です</h2>
-    <p>メールに記載されたURLからアクセスしてください。</p>
+    <h2>アクセスできません</h2>
+    <p>URLが正しくないか、有効期限が切れています。<br>登録メールに記載のリンクからアクセスしてください。</p>
   </div>
 
   <div id="loading-screen">
     <div class="spinner"></div>
-    <p style="color:var(--muted);font-size:13px">読み込み中...</p>
+    <div class="loading-text">読み込み中...</div>
   </div>
 
   <div id="content">
 
     <div class="welcome">
-      <h1 id="welcome-name">ようこそ</h1>
-      <p id="welcome-sub"></p>
+      <div class="welcome-name" id="welcome-name">—</div>
+      <div class="welcome-sub" id="welcome-sub"></div>
     </div>
 
-    <div class="card">
-      <div class="card-header">
-        <span class="card-icon">📋</span>
-        <h2>契約状況</h2>
+    <!-- プランバー -->
+    <div class="plan-bar">
+      <div class="plan-bar-left">
+        <div class="plan-label">現在のプラン</div>
+        <div class="plan-name" id="plan-name">—</div>
       </div>
-      <div class="card-body">
-        <div class="info-grid">
-          <div class="info-item">
-            <label>プラン</label>
-            <div class="value" id="plan-name">-</div>
+      <div class="plan-bar-right">
+        <div class="plan-stat">
+          <div class="plan-stat-num" id="stat-status">—</div>
+          <div class="plan-stat-label">契約ステータス</div>
+        </div>
+        <div class="plan-divider"></div>
+        <div class="url-gauge">
+          <div class="url-gauge-label">
+            <span>URL枠</span>
+            <span id="gauge-label">— / —</span>
           </div>
-          <div class="info-item">
-            <label>ステータス</label>
-            <div id="contract-status">-</div>
-          </div>
-          <div class="info-item">
-            <label>課金開始日</label>
-            <div class="value" id="billing-start">-</div>
-          </div>
-          <div class="info-item">
-            <label>登録URL数</label>
-            <div class="value" id="url-count">-</div>
+          <div class="url-gauge-bar">
+            <div class="url-gauge-fill" id="gauge-fill" style="width:0%"></div>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- URL一覧 -->
     <div class="card">
       <div class="card-header">
-        <span class="card-icon">🔗</span>
-        <h2>登録URL一覧</h2>
+        <div class="card-header-left">
+          <h2>登録中のURL</h2>
+        </div>
       </div>
       <div class="card-body">
         <ul class="url-list" id="url-list">
           <li class="empty">読み込み中...</li>
         </ul>
+        <div id="url-list-notice" style="margin-top:12px;display:none;"></div>
       </div>
     </div>
 
+    <!-- URL追加 -->
+    <div class="card" id="add-url-card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h2>URLを追加する</h2>
+        </div>
+      </div>
+      <div class="card-body add-url-section">
+        <div id="add-url-limit-msg" style="display:none;">
+          <div class="notice notice-warning">プランのURL上限に達しています。URLを削除するか、プランのアップグレードをご検討ください。</div>
+        </div>
+        <div id="add-url-form">
+          <div class="url-input-row">
+            <input type="url" id="new-url-input" placeholder="https://example.go.jp/..." oninput="onUrlInput(this.value)">
+            <button class="btn btn-secondary" onclick="fetchPreview()" id="preview-btn">確認</button>
+          </div>
+          <div class="ogp-preview" id="ogp-preview">
+            <div class="ogp-icon">🌐</div>
+            <div class="ogp-info">
+              <div class="ogp-site-name" id="ogp-site-name">—</div>
+              <div class="ogp-url" id="ogp-url-display">—</div>
+            </div>
+          </div>
+          <div id="add-notice" style="display:none;margin-bottom:12px;"></div>
+          <button class="btn btn-primary" onclick="addUrl()" id="add-btn" disabled>追加する</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 契約情報 -->
     <div class="card">
       <div class="card-header">
-        <span class="card-icon">📝</span>
-        <h2>変更申請</h2>
+        <div class="card-header-left">
+          <h2>契約情報</h2>
+        </div>
       </div>
       <div class="card-body">
+        <div class="info-grid">
+          <div class="info-item">
+            <label>担当者</label>
+            <div class="value" id="info-name">—</div>
+          </div>
+          <div class="info-item">
+            <label>配信先メール</label>
+            <div class="value" id="info-mail" style="font-size:12px;">—</div>
+          </div>
+          <div class="info-item">
+            <label>課金開始日</label>
+            <div class="value" id="info-billing">—</div>
+          </div>
+          <div class="info-item">
+            <label>ステータス</label>
+            <div id="info-status">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
+    <!-- 変更申請 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h2>変更申請</h2>
+        </div>
+      </div>
+      <div class="card-body">
         <div class="tabs">
-          <button class="tab active" onclick="switchTab('url-add')">URL追加</button>
-          <button class="tab" onclick="switchTab('url-del')">URL削除</button>
-          <button class="tab" onclick="switchTab('mail-change')">メール変更</button>
+          <button class="tab active" onclick="switchTab('mail-change')">メール変更</button>
+          <button class="tab" onclick="switchTab('other')">その他</button>
         </div>
 
-        <div id="tab-url-add" class="tab-panel active">
-          <div class="notice notice-info">追加したいURLをご記入ください。確認後、担当者が対応いたします。</div>
-          <div class="form-group">
-            <label>追加したいURL</label>
-            <input type="url" id="req-url-add" placeholder="https://example.go.jp/...">
-          </div>
-          <div class="form-group">
-            <label>補足・用途（任意）</label>
-            <textarea id="req-url-add-note" placeholder="監視したい理由など"></textarea>
-          </div>
-          <button class="btn btn-primary" onclick="submitRequest('URL追加')">申請する</button>
-        </div>
-
-        <div id="tab-url-del" class="tab-panel">
-          <div class="notice notice-info">削除したいURLをご記入ください。</div>
-          <div class="form-group">
-            <label>削除したいURL</label>
-            <input type="url" id="req-url-del" placeholder="https://example.go.jp/...">
-          </div>
-          <div class="form-group">
-            <label>補足（任意）</label>
-            <textarea id="req-url-del-note" placeholder="理由など"></textarea>
-          </div>
-          <button class="btn btn-primary" onclick="submitRequest('URL削除')">申請する</button>
-        </div>
-
-        <div id="tab-mail-change" class="tab-panel">
-          <div class="notice notice-info">変更後のメールアドレスをご記入ください。</div>
+        <div id="tab-mail-change" class="tab-panel active">
+          <div class="notice notice-info">変更後のメールアドレスをご記入ください。確認後、担当者より対応いたします。</div>
           <div class="form-group">
             <label>現在のメールアドレス</label>
-            <div class="mail-display" id="current-mail">-</div>
+            <div class="mail-display" id="current-mail">—</div>
           </div>
           <div class="form-group">
             <label>新しいメールアドレス</label>
@@ -429,41 +758,65 @@
           <button class="btn btn-primary" onclick="submitRequest('メール変更')">申請する</button>
         </div>
 
-        <div id="submit-result" style="margin-top:14px;display:none;"></div>
+        <div id="tab-other" class="tab-panel">
+          <div class="form-group">
+            <label>お問い合わせ内容</label>
+            <textarea id="req-other-detail" placeholder="ご要望やお問い合わせ内容をご記入ください"></textarea>
+          </div>
+          <button class="btn btn-primary" onclick="submitRequest('その他')">送信する</button>
+        </div>
 
+        <div id="submit-result" style="margin-top:14px;display:none;"></div>
       </div>
     </div>
 
-  </div>
+  </div><!-- /#content -->
 </main>
+
+<!-- 削除確認ダイアログ -->
+<div class="overlay" id="delete-overlay">
+  <div class="dialog">
+    <h3>URLを削除しますか？</h3>
+    <p id="delete-dialog-msg">このURLの監視を停止し、登録を削除します。</p>
+    <div class="dialog-actions">
+      <button class="btn btn-secondary" onclick="closeDeleteDialog()">キャンセル</button>
+      <button class="btn btn-primary" id="delete-confirm-btn" style="background:var(--danger);" onclick="confirmDelete()">削除する</button>
+    </div>
+  </div>
+</div>
 
 <script>
 const WEBHOOK_GET_USER     = 'https://hook.us2.make.com/jyrbduiogs8m32ban6d32sfk96k5y1ew';
 const WEBHOOK_GET_URLS     = 'https://hook.us2.make.com/wcmbakajcwr2jvq32w4fdt1tkupiqgbj';
 const WEBHOOK_POST_REQUEST = 'https://hook.us2.make.com/y21d2oznhqxyasbzz9r7dsbxpnbpz7e4';
+const WEBHOOK_ADD_URL      = 'https://hook.us2.make.com/f6icugecn43cq0y3j2ffe86u44horc1v';
+const WEBHOOK_DELETE_URL   = 'https://hook.us2.make.com/giyctq5gnka7b9nyjygul84vmesdnw5r';
+
+// プラン別URL上限
+const PLAN_LIMITS = {
+  'ライト':    3,
+  'スタンダード': 10,
+  'プロ':      30,
+};
+const DEFAULT_LIMIT = 5;
 
 let currentUser = null;
+let currentUrls = [];
+let pendingDeleteSubId = null;
+let pendingDeleteName = null;
+let fetchedSiteName = '';
+let fetchedUrl = '';
 
+// ── Init ──
 (async () => {
   const params = new URLSearchParams(location.search);
   const token = params.get('token');
-
-  if (!token) {
-    show('auth-screen');
-    return;
-  }
-
+  if (!token) { show('auth-screen'); return; }
   show('loading-screen');
-
   try {
     const res = await fetch(`${WEBHOOK_GET_USER}?token=${encodeURIComponent(token)}`);
     const user = await res.json();
-
-    if (!user || !user.id) {
-      show('auth-screen');
-      return;
-    }
-
+    if (!user || !user.id) { show('auth-screen'); return; }
     currentUser = user;
     await renderAll(user);
     show('content');
@@ -474,16 +827,23 @@ let currentUser = null;
 })();
 
 async function renderAll(user) {
+  // Welcome
   document.getElementById('welcome-name').textContent =
     (user['法人名'] || user['事業所名'] || '') + ' 様';
   document.getElementById('welcome-sub').textContent =
     user['担当者氏名'] ? `担当者：${user['担当者氏名']}` : '';
 
-  document.getElementById('plan-name').textContent = user['プラン名'] || '-';
-  document.getElementById('contract-status').innerHTML = statusBadge(user['契約ステータス']);
-  document.getElementById('billing-start').textContent = user['課金開始日'] || '-';
-  document.getElementById('url-count').textContent = (user['購読中URL数'] ?? '-') + ' 件';
-  document.getElementById('current-mail').textContent = user['確定配信先メール'] || '-';
+  // Plan bar
+  document.getElementById('plan-name').textContent = user['プラン名'] || '—';
+  const statusEl = document.getElementById('stat-status');
+  statusEl.innerHTML = statusBadge(user['契約ステータス']);
+
+  // 契約情報
+  document.getElementById('info-name').textContent = user['担当者氏名'] || '—';
+  document.getElementById('info-mail').textContent = user['確定配信先メール'] || '—';
+  document.getElementById('info-billing').textContent = user['課金開始日'] || '—';
+  document.getElementById('info-status').innerHTML = statusBadge(user['契約ステータス']);
+  document.getElementById('current-mail').textContent = user['確定配信先メール'] || '—';
 
   await renderURLs(user);
 }
@@ -491,36 +851,51 @@ async function renderAll(user) {
 async function renderURLs(user) {
   const list = document.getElementById('url-list');
   const subIds = user['[Subscriptions] 中間テーブル'];
+  const limit = PLAN_LIMITS[user['プラン名']] || DEFAULT_LIMIT;
 
   if (!subIds || subIds.length === 0) {
     list.innerHTML = '<li class="empty">登録されているURLはありません</li>';
+    updateGauge(0, limit);
+    updateAddSection(0, limit);
     return;
   }
 
   try {
     const urlMap = {};
+    const subMap = {};
     await Promise.all(subIds.map(async (subId) => {
       const res = await fetch(`${WEBHOOK_GET_URLS}?subscriptionId=${encodeURIComponent(subId)}`);
       const data = await res.json();
       if (data && data.id && !urlMap[data.id]) {
         urlMap[data.id] = data;
+        subMap[data.id] = subId;
       }
     }));
 
-    const urls = Object.values(urlMap);
+    currentUrls = Object.values(urlMap).map(u => ({
+      ...u,
+      subscriptionId: subMap[u.id]
+    }));
 
-    if (urls.length === 0) {
+    const count = currentUrls.length;
+    updateGauge(count, limit);
+    updateAddSection(count, limit);
+
+    if (count === 0) {
       list.innerHTML = '<li class="empty">登録されているURLはありません</li>';
       return;
     }
 
-    list.innerHTML = urls.map(u => `
-      <li class="url-item">
+    list.innerHTML = currentUrls.map(u => `
+      <li class="url-item" id="url-item-${esc(u.subscriptionId)}">
         <div class="url-item-info">
-          <div class="url-name">${esc(u['サイト名'] || '（名称未設定）')}</div>
-          <div class="url-addr">${esc(u['対象URL'] || '-')}</div>
+          <div class="url-name">${esc(u['サイト名'] || '（名称取得中）')}</div>
+          <div class="url-addr">${esc(u['対象URL'] || '—')}</div>
         </div>
-        <span>${urlStatusBadge(u['運用ステータス'])}</span>
+        <div class="url-item-actions">
+          <span>${urlStatusBadge(u['運用ステータス'])}</span>
+          <button class="btn-delete" onclick="openDeleteDialog('${esc(u.subscriptionId)}','${esc(u['サイト名'] || u['対象URL'] || 'このURL')}')">削除</button>
+        </div>
       </li>
     `).join('');
 
@@ -530,31 +905,222 @@ async function renderURLs(user) {
   }
 }
 
+function updateGauge(count, limit) {
+  const pct = limit > 0 ? Math.min(100, Math.round(count / limit * 100)) : 0;
+  document.getElementById('gauge-fill').style.width = pct + '%';
+  document.getElementById('gauge-label').textContent = `${count} / ${limit}`;
+}
+
+function updateAddSection(count, limit) {
+  const limitMsg = document.getElementById('add-url-limit-msg');
+  const form = document.getElementById('add-url-form');
+  if (count >= limit) {
+    limitMsg.style.display = 'block';
+    form.style.display = 'none';
+  } else {
+    limitMsg.style.display = 'none';
+    form.style.display = 'block';
+  }
+}
+
+// ── URL追加 ──
+function onUrlInput(val) {
+  // プレビューリセット
+  document.getElementById('ogp-preview').classList.remove('visible');
+  document.getElementById('add-btn').disabled = true;
+  fetchedSiteName = '';
+  fetchedUrl = '';
+  clearAddNotice();
+}
+
+async function fetchPreview() {
+  const url = document.getElementById('new-url-input').value.trim();
+  if (!url || !url.startsWith('http')) {
+    showAddNotice('error', 'URLを正しく入力してください（http または https から始まる形式）');
+    return;
+  }
+
+  const btn = document.getElementById('preview-btn');
+  btn.disabled = true;
+  btn.textContent = '取得中...';
+  clearAddNotice();
+
+  try {
+    const res = await fetch(WEBHOOK_ADD_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        url: url,
+        userRecordId: currentUser.id,
+        previewOnly: true
+      })
+    });
+    const data = await res.json();
+
+    if (data && data.siteName) {
+      fetchedSiteName = data.siteName;
+      fetchedUrl = url;
+      document.getElementById('ogp-site-name').textContent = data.siteName;
+      document.getElementById('ogp-url-display').textContent = url;
+      document.getElementById('ogp-preview').classList.add('visible');
+      document.getElementById('add-btn').disabled = false;
+    } else {
+      showAddNotice('error', 'サイト情報の取得に失敗しました。URLを確認してください。');
+    }
+  } catch(e) {
+    showAddNotice('error', '接続エラーが発生しました。時間をおいて再試行してください。');
+  }
+
+  btn.disabled = false;
+  btn.textContent = '確認';
+}
+
+async function addUrl() {
+  const url = fetchedUrl || document.getElementById('new-url-input').value.trim();
+  if (!url) return;
+
+  const btn = document.getElementById('add-btn');
+  btn.disabled = true;
+  btn.textContent = '追加中...';
+  clearAddNotice();
+
+  try {
+    const res = await fetch(WEBHOOK_ADD_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        url: url,
+        userRecordId: currentUser.id,
+        previewOnly: false
+      })
+    });
+    const data = await res.json();
+
+    if (data && data.success) {
+      // UIに即時追加
+      const newItem = {
+        id: data.urlRecordId,
+        subscriptionId: data.subscriptionRecordId,
+        'サイト名': fetchedSiteName || data.siteName || '（名称取得中）',
+        '対象URL': url,
+        '運用ステータス': '稼働中'
+      };
+      currentUrls.push(newItem);
+
+      const list = document.getElementById('url-list');
+      const emptyEl = list.querySelector('.empty');
+      if (emptyEl) emptyEl.remove();
+
+      const li = document.createElement('li');
+      li.className = 'url-item';
+      li.id = `url-item-${esc(data.subscriptionRecordId)}`;
+      li.innerHTML = `
+        <div class="url-item-info">
+          <div class="url-name">${esc(newItem['サイト名'])}</div>
+          <div class="url-addr">${esc(url)}</div>
+        </div>
+        <div class="url-item-actions">
+          <span>${urlStatusBadge('稼働中')}</span>
+          <button class="btn-delete" onclick="openDeleteDialog('${esc(data.subscriptionRecordId)}','${esc(newItem['サイト名'])}')">削除</button>
+        </div>
+      `;
+      list.appendChild(li);
+
+      // ゲージ更新
+      const limit = PLAN_LIMITS[currentUser['プラン名']] || DEFAULT_LIMIT;
+      updateGauge(currentUrls.length, limit);
+      updateAddSection(currentUrls.length, limit);
+
+      // フォームリセット
+      document.getElementById('new-url-input').value = '';
+      document.getElementById('ogp-preview').classList.remove('visible');
+      fetchedSiteName = '';
+      fetchedUrl = '';
+      showAddNotice('success', 'URLを追加しました。次回の定期チェックから監視が始まります。');
+    } else {
+      showAddNotice('error', '追加に失敗しました。時間をおいて再試行してください。');
+    }
+  } catch(e) {
+    showAddNotice('error', '接続エラーが発生しました。');
+  }
+
+  btn.disabled = false;
+  btn.textContent = '追加する';
+}
+
+// ── URL削除 ──
+function openDeleteDialog(subId, name) {
+  pendingDeleteSubId = subId;
+  pendingDeleteName = name;
+  document.getElementById('delete-dialog-msg').textContent =
+    `「${name}」の監視を停止し、登録を削除します。`;
+  document.getElementById('delete-overlay').classList.add('visible');
+}
+
+function closeDeleteDialog() {
+  document.getElementById('delete-overlay').classList.remove('visible');
+  pendingDeleteSubId = null;
+  pendingDeleteName = null;
+}
+
+async function confirmDelete() {
+  if (!pendingDeleteSubId) return;
+  const btn = document.getElementById('delete-confirm-btn');
+  btn.disabled = true;
+  btn.textContent = '削除中...';
+
+  try {
+    const res = await fetch(WEBHOOK_DELETE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subscriptionRecordId: pendingDeleteSubId })
+    });
+    const data = await res.json();
+
+    if (data && data.success) {
+      // UIから即時削除
+      const el = document.getElementById(`url-item-${pendingDeleteSubId}`);
+      if (el) el.remove();
+
+      currentUrls = currentUrls.filter(u => u.subscriptionId !== pendingDeleteSubId);
+
+      const list = document.getElementById('url-list');
+      if (currentUrls.length === 0) {
+        list.innerHTML = '<li class="empty">登録されているURLはありません</li>';
+      }
+
+      const limit = PLAN_LIMITS[currentUser['プラン名']] || DEFAULT_LIMIT;
+      updateGauge(currentUrls.length, limit);
+      updateAddSection(currentUrls.length, limit);
+
+      closeDeleteDialog();
+    } else {
+      alert('削除に失敗しました。時間をおいて再試行してください。');
+    }
+  } catch(e) {
+    alert('接続エラーが発生しました。');
+  }
+
+  btn.disabled = false;
+  btn.textContent = '削除する';
+}
+
+// ── 変更申請 ──
 async function submitRequest(type) {
-  const btn = event.target;
   const resultEl = document.getElementById('submit-result');
   resultEl.style.display = 'none';
 
   let detail = '';
-  if (type === 'URL追加') {
-    const url = document.getElementById('req-url-add').value.trim();
-    const note = document.getElementById('req-url-add-note').value.trim();
-    if (!url) { showResult('error', 'URLを入力してください'); return; }
-    detail = `追加URL: ${url}${note ? '\n補足: ' + note : ''}`;
-  } else if (type === 'URL削除') {
-    const url = document.getElementById('req-url-del').value.trim();
-    const note = document.getElementById('req-url-del-note').value.trim();
-    if (!url) { showResult('error', 'URLを入力してください'); return; }
-    detail = `削除URL: ${url}${note ? '\n補足: ' + note : ''}`;
-  } else if (type === 'メール変更') {
+  if (type === 'メール変更') {
     const mail = document.getElementById('req-mail-new').value.trim();
     const note = document.getElementById('req-mail-note').value.trim();
     if (!mail) { showResult('error', 'メールアドレスを入力してください'); return; }
     detail = `新メール: ${mail}${note ? '\n補足: ' + note : ''}`;
+  } else if (type === 'その他') {
+    const d = document.getElementById('req-other-detail').value.trim();
+    if (!d) { showResult('error', '内容を入力してください'); return; }
+    detail = d;
   }
-
-  btn.disabled = true;
-  btn.textContent = '送信中...';
 
   try {
     const res = await fetch(WEBHOOK_POST_REQUEST, {
@@ -567,25 +1133,21 @@ async function submitRequest(type) {
         detail: detail,
       }),
     });
-
     const data = await res.json();
     if (data && data.success) {
       showResult('success', '申請を受け付けました。担当者より順次ご対応いたします。');
-      document.querySelectorAll('#content input, #content textarea').forEach(el => el.value = '');
+      document.querySelectorAll('#content input[type=email], #content textarea').forEach(el => el.value = '');
     } else {
       throw new Error('failed');
     }
   } catch(e) {
-    console.error(e);
     showResult('error', '送信に失敗しました。時間をおいて再度お試しください。');
   }
-
-  btn.disabled = false;
-  btn.textContent = '申請する';
 }
 
+// ── Helpers ──
 function show(id) {
-  ['auth-screen', 'loading-screen', 'content'].forEach(s => {
+  ['auth-screen','loading-screen','content'].forEach(s => {
     const el = document.getElementById(s);
     if (!el) return;
     el.style.display = s === id
@@ -596,29 +1158,20 @@ function show(id) {
 
 function esc(str) {
   return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
 function statusBadge(status) {
-  const map = {
-    '有料アクティブ': 'active',
-    '無料トライアル': 'warning',
-    '決済エラー': 'error',
-    '手動停止': 'error',
-    'システム停止': 'error',
-    '未決済': 'neutral',
-  };
+  const map = { '有料アクティブ':'active','無料トライアル':'warning','決済エラー':'error','手動停止':'error','システム停止':'error','未決済':'neutral' };
   const cls = map[status] || 'neutral';
-  return `<span class="badge badge-${cls}">${esc(status || '-')}</span>`;
+  return `<span class="badge badge-${cls}">${esc(status || '—')}</span>`;
 }
 
 function urlStatusBadge(status) {
-  const map = { '稼働中': 'active', '停止': 'neutral', 'エラー': 'error' };
+  const map = { '稼働中':'active','停止':'neutral','エラー':'error' };
   const cls = map[status] || 'neutral';
-  return `<span class="badge badge-${cls}">${esc(status || '-')}</span>`;
+  return `<span class="badge badge-${cls}">${esc(status || '—')}</span>`;
 }
 
 function showResult(type, msg) {
@@ -628,9 +1181,21 @@ function showResult(type, msg) {
   el.style.display = 'block';
 }
 
+function showAddNotice(type, msg) {
+  const el = document.getElementById('add-notice');
+  el.className = `notice notice-${type}`;
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function clearAddNotice() {
+  const el = document.getElementById('add-notice');
+  el.style.display = 'none';
+}
+
 function switchTab(name) {
   document.querySelectorAll('.tab').forEach((t, i) => {
-    const names = ['url-add', 'url-del', 'mail-change'];
+    const names = ['mail-change','other'];
     t.classList.toggle('active', names[i] === name);
   });
   document.querySelectorAll('.tab-panel').forEach(p => {
