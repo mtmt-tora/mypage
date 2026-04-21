@@ -737,34 +737,56 @@ main {
       </div>
       <div class="card-body">
         <div class="tabs">
-          <button class="tab active" onclick="switchTab('mail-change')">配信先メール変更</button>
-          <button class="tab" onclick="switchTab('person-change')">担当者変更</button>
+          <button class="tab active" onclick="switchTab('plan-change')">プラン</button>
+          <button class="tab" onclick="switchTab('mail-change')">配信先</button>
+          <button class="tab" onclick="switchTab('person-change')">担当者</button>
         </div>
 
-        <div id="tab-mail-change" class="tab-panel active">
-          <div class="notice notice-info">変更後のメールアドレスをご記入ください。確認後、担当者より対応いたします。</div>
+        <div id="tab-plan-change" class="tab-panel active">
+          <div class="notice notice-info">希望するプランを選択して申請してください。確認後、担当者より対応いたします。</div>
           <div class="form-group">
-            <label>現在のメールアドレス</label>
+            <label>現在のプラン</label>
+            <div class="mail-display" id="current-plan-display">—</div>
+          </div>
+          <div class="form-group">
+            <label>希望するプラン</label>
+            <select id="req-plan-new" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);outline:none;">
+              <option value="">選択してください</option>
+              <option value="無料トライアル">無料トライアル（1URL）</option>
+              <option value="ベーシック">ベーシック（3URL）</option>
+              <option value="スタンダード">スタンダード（10URL）</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="submitRequest('プラン変更')">申請する</button>
+        </div>
+
+        <div id="tab-mail-change" class="tab-panel">
+          <div class="form-group">
+            <label>現在の配信先メール</label>
             <div class="mail-display" id="current-mail">—</div>
           </div>
           <div class="form-group">
-            <label>新しいメールアドレス</label>
+            <label>新しい配信先メール</label>
             <input type="email" id="req-mail-new" placeholder="new@example.com">
           </div>
-          <button class="btn btn-primary" onclick="submitRequest('メール変更')">申請する</button>
+          <button class="btn btn-primary" onclick="updateUser('mail')">変更する</button>
         </div>
 
         <div id="tab-person-change" class="tab-panel">
-          <div class="notice notice-info">変更後の担当者名をご記入ください。確認後、担当者より対応いたします。</div>
           <div class="form-group">
-            <label>現在の担当者名</label>
-            <div class="mail-display" id="current-person">—</div>
+            <label>担当者氏名</label>
+            <input type="text" id="req-person-name" placeholder="山田 太郎">
           </div>
           <div class="form-group">
-            <label>新しい担当者名</label>
-            <input type="text" id="req-person-new" placeholder="山田 太郎">
+            <label>担当者メールアドレス</label>
+            <input type="email" id="req-person-email" placeholder="yamada@example.com">
           </div>
-          <button class="btn btn-primary" onclick="submitRequest('担当者変更')">申請する</button>
+          <div class="form-group">
+            <label>配信先メールアドレス</label>
+            <input type="email" id="req-person-delivery" placeholder="delivery@example.com">
+            <div style="font-size:11px;color:var(--hint);margin-top:4px;">空白の場合は担当者メールアドレスと同じになります</div>
+          </div>
+          <button class="btn btn-primary" onclick="updateUser('person')">変更する</button>
         </div>
 
         <div id="submit-result" style="margin-top:14px;display:none;"></div>
@@ -792,6 +814,7 @@ const WEBHOOK_GET_URLS     = 'https://hook.us2.make.com/wcmbakajcwr2jvq32w4fdt1t
 const WEBHOOK_POST_REQUEST = 'https://hook.us2.make.com/y21d2oznhqxyasbzz9r7dsbxpnbpz7e4';
 const WEBHOOK_ADD_URL      = 'https://hook.us2.make.com/f6icugecn43cq0y3j2ffe86u44horc1v';
 const WEBHOOK_DELETE_URL   = 'https://hook.us2.make.com/giyctq5gnka7b9nyjygul84vmesdnw5r';
+const WEBHOOK_UPDATE_USER  = 'https://hook.us2.make.com/wnx27pe8vaj7mhc5esdvig5abz11wr6z';
 
 // プラン別URL上限
 const PLAN_LIMITS = {
@@ -833,8 +856,8 @@ async function renderAll(user) {
   const office = user['事業所名'] || '';
   const person = user['担当者氏名'] || '';
   const corpPart = (corp && office && corp !== office) ? corp + '　' + office : (corp || office);
-  document.getElementById('welcome-name').textContent = (corpPart || person) + '　様';
-  document.getElementById('welcome-sub').textContent = person ? `担当者：${person}` : '';
+  document.getElementById('welcome-name').textContent = corpPart || person;
+  document.getElementById('welcome-sub').textContent = person ? `担当者：${person}　様` : '';
 
   // Plan bar
   document.getElementById('plan-name').textContent = user['プラン名'] || '—';
@@ -847,8 +870,8 @@ async function renderAll(user) {
   document.getElementById('info-billing').textContent = user['課金開始日'] || '—';
   document.getElementById('info-status').innerHTML = statusBadge(user['契約ステータス']);
   document.getElementById('current-mail').textContent = user['確定配信先メール'] || '—';
-  const personEl = document.getElementById('current-person');
-  if (personEl) personEl.textContent = user['担当者氏名'] || '—';
+  const planDisplayEl = document.getElementById('current-plan-display');
+  if (planDisplayEl) planDisplayEl.textContent = user['プラン名'] || '—';
 
   await renderURLs(user);
 }
@@ -1116,14 +1139,10 @@ async function submitRequest(type) {
   resultEl.style.display = 'none';
 
   let detail = '';
-  if (type === 'メール変更') {
-    const mail = document.getElementById('req-mail-new').value.trim();
-    if (!mail) { showResult('error', 'メールアドレスを入力してください'); return; }
-    detail = `新メール: ${mail}`;
-  } else if (type === '担当者変更') {
-    const person = document.getElementById('req-person-new').value.trim();
-    if (!person) { showResult('error', '担当者名を入力してください'); return; }
-    detail = `新担当者名: ${person}`;
+  if (type === 'プラン変更') {
+    const plan = document.getElementById('req-plan-new').value;
+    if (!plan) { showResult('error', 'プランを選択してください'); return; }
+    detail = `希望プラン: ${plan}`;
   }
 
   try {
@@ -1146,6 +1165,52 @@ async function submitRequest(type) {
     }
   } catch(e) {
     showResult('error', '送信に失敗しました。時間をおいて再度お試しください。');
+  }
+}
+
+// ── updateUser ──
+async function updateUser(type) {
+  const resultEl = document.getElementById('submit-result');
+  resultEl.style.display = 'none';
+
+  let payload = { userRecordId: currentUser.id };
+
+  if (type === 'mail') {
+    const mail = document.getElementById('req-mail-new').value.trim();
+    if (!mail) { showResult('error', '配信先メールを入力してください'); return; }
+    payload.deliveryEmail = mail;
+  } else if (type === 'person') {
+    const name = document.getElementById('req-person-name').value.trim();
+    const email = document.getElementById('req-person-email').value.trim();
+    const delivery = document.getElementById('req-person-delivery').value.trim();
+    if (!name && !email) { showResult('error', '氏名またはメールアドレスを入力してください'); return; }
+    if (name) payload.personName = name;
+    if (email) payload.personEmail = email;
+    payload.deliveryEmail = delivery || email;
+  }
+
+  try {
+    const res = await fetch(WEBHOOK_UPDATE_USER, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (data && data.success) {
+      // ローカルのcurrentUserも更新
+      if (payload.personName) currentUser['担当者氏名'] = payload.personName;
+      if (payload.personEmail) currentUser['担当者メールアドレス'] = payload.personEmail;
+      if (payload.deliveryEmail) {
+        currentUser['確定配信先メール'] = payload.deliveryEmail;
+        document.getElementById('current-mail').textContent = payload.deliveryEmail;
+      }
+      showResult('success', '変更しました。');
+      document.querySelectorAll('#tab-mail-change input, #tab-person-change input').forEach(el => el.value = '');
+    } else {
+      throw new Error('failed');
+    }
+  } catch(e) {
+    showResult('error', '変更に失敗しました。時間をおいて再試行してください。');
   }
 }
 
@@ -1199,7 +1264,7 @@ function clearAddNotice() {
 
 function switchTab(name) {
   document.querySelectorAll('.tab').forEach((t, i) => {
-    const names = ['mail-change','person-change'];
+    const names = ['plan-change','mail-change','person-change'];
     t.classList.toggle('active', names[i] === name);
   });
   document.querySelectorAll('.tab-panel').forEach(p => {
