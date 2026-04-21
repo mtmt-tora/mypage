@@ -655,6 +655,35 @@ main {
       </div>
     </div>
 
+    <!-- 契約情報 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h2>契約情報</h2>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="info-grid">
+          <div class="info-item">
+            <label>担当者</label>
+            <div class="value" id="info-name">—</div>
+          </div>
+          <div class="info-item">
+            <label>配信先メール</label>
+            <div class="value" id="info-mail" style="font-size:12px;">—</div>
+          </div>
+          <div class="info-item">
+            <label>課金開始日</label>
+            <div class="value" id="info-billing">—</div>
+          </div>
+          <div class="info-item">
+            <label>ステータス</label>
+            <div id="info-status">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- URL一覧 -->
     <div class="card">
       <div class="card-header">
@@ -699,35 +728,6 @@ main {
       </div>
     </div>
 
-    <!-- 契約情報 -->
-    <div class="card">
-      <div class="card-header">
-        <div class="card-header-left">
-          <h2>契約情報</h2>
-        </div>
-      </div>
-      <div class="card-body">
-        <div class="info-grid">
-          <div class="info-item">
-            <label>担当者</label>
-            <div class="value" id="info-name">—</div>
-          </div>
-          <div class="info-item">
-            <label>配信先メール</label>
-            <div class="value" id="info-mail" style="font-size:12px;">—</div>
-          </div>
-          <div class="info-item">
-            <label>課金開始日</label>
-            <div class="value" id="info-billing">—</div>
-          </div>
-          <div class="info-item">
-            <label>ステータス</label>
-            <div id="info-status">—</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- 変更申請 -->
     <div class="card">
       <div class="card-header">
@@ -737,8 +737,8 @@ main {
       </div>
       <div class="card-body">
         <div class="tabs">
-          <button class="tab active" onclick="switchTab('mail-change')">メール変更</button>
-          <button class="tab" onclick="switchTab('other')">その他</button>
+          <button class="tab active" onclick="switchTab('mail-change')">配信先メール変更</button>
+          <button class="tab" onclick="switchTab('person-change')">担当者変更</button>
         </div>
 
         <div id="tab-mail-change" class="tab-panel active">
@@ -751,19 +751,20 @@ main {
             <label>新しいメールアドレス</label>
             <input type="email" id="req-mail-new" placeholder="new@example.com">
           </div>
-          <div class="form-group">
-            <label>補足（任意）</label>
-            <textarea id="req-mail-note" placeholder="備考など"></textarea>
-          </div>
           <button class="btn btn-primary" onclick="submitRequest('メール変更')">申請する</button>
         </div>
 
-        <div id="tab-other" class="tab-panel">
+        <div id="tab-person-change" class="tab-panel">
+          <div class="notice notice-info">変更後の担当者名をご記入ください。確認後、担当者より対応いたします。</div>
           <div class="form-group">
-            <label>お問い合わせ内容</label>
-            <textarea id="req-other-detail" placeholder="ご要望やお問い合わせ内容をご記入ください"></textarea>
+            <label>現在の担当者名</label>
+            <div class="mail-display" id="current-person">—</div>
           </div>
-          <button class="btn btn-primary" onclick="submitRequest('その他')">送信する</button>
+          <div class="form-group">
+            <label>新しい担当者名</label>
+            <input type="text" id="req-person-new" placeholder="山田 太郎">
+          </div>
+          <button class="btn btn-primary" onclick="submitRequest('担当者変更')">申請する</button>
         </div>
 
         <div id="submit-result" style="margin-top:14px;display:none;"></div>
@@ -794,11 +795,11 @@ const WEBHOOK_DELETE_URL   = 'https://hook.us2.make.com/giyctq5gnka7b9nyjygul84v
 
 // プラン別URL上限
 const PLAN_LIMITS = {
-  'ライト':    3,
-  'スタンダード': 10,
-  'プロ':      30,
+  '無料トライアル': 1,
+  'ベーシック':     3,
+  'スタンダード':   10,
 };
-const DEFAULT_LIMIT = 5;
+const DEFAULT_LIMIT = 1;
 
 let currentUser = null;
 let currentUrls = [];
@@ -828,10 +829,12 @@ let fetchedUrl = '';
 
 async function renderAll(user) {
   // Welcome
-  document.getElementById('welcome-name').textContent =
-    (user['法人名'] || user['事業所名'] || '') + ' 様';
-  document.getElementById('welcome-sub').textContent =
-    user['担当者氏名'] ? `担当者：${user['担当者氏名']}` : '';
+  const corp = user['法人名'] || '';
+  const office = user['事業所名'] || '';
+  const person = user['担当者氏名'] || '';
+  const corpPart = (corp && office && corp !== office) ? corp + '　' + office : (corp || office);
+  document.getElementById('welcome-name').textContent = (corpPart || person) + '　様';
+  document.getElementById('welcome-sub').textContent = person ? `担当者：${person}` : '';
 
   // Plan bar
   document.getElementById('plan-name').textContent = user['プラン名'] || '—';
@@ -844,6 +847,8 @@ async function renderAll(user) {
   document.getElementById('info-billing').textContent = user['課金開始日'] || '—';
   document.getElementById('info-status').innerHTML = statusBadge(user['契約ステータス']);
   document.getElementById('current-mail').textContent = user['確定配信先メール'] || '—';
+  const personEl = document.getElementById('current-person');
+  if (personEl) personEl.textContent = user['担当者氏名'] || '—';
 
   await renderURLs(user);
 }
@@ -1113,13 +1118,12 @@ async function submitRequest(type) {
   let detail = '';
   if (type === 'メール変更') {
     const mail = document.getElementById('req-mail-new').value.trim();
-    const note = document.getElementById('req-mail-note').value.trim();
     if (!mail) { showResult('error', 'メールアドレスを入力してください'); return; }
-    detail = `新メール: ${mail}${note ? '\n補足: ' + note : ''}`;
-  } else if (type === 'その他') {
-    const d = document.getElementById('req-other-detail').value.trim();
-    if (!d) { showResult('error', '内容を入力してください'); return; }
-    detail = d;
+    detail = `新メール: ${mail}`;
+  } else if (type === '担当者変更') {
+    const person = document.getElementById('req-person-new').value.trim();
+    if (!person) { showResult('error', '担当者名を入力してください'); return; }
+    detail = `新担当者名: ${person}`;
   }
 
   try {
@@ -1195,7 +1199,7 @@ function clearAddNotice() {
 
 function switchTab(name) {
   document.querySelectorAll('.tab').forEach((t, i) => {
-    const names = ['mail-change','other'];
+    const names = ['mail-change','person-change'];
     t.classList.toggle('active', names[i] === name);
   });
   document.querySelectorAll('.tab-panel').forEach(p => {
