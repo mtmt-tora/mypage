@@ -793,6 +793,19 @@ main {
       </div>
     </div>
 
+    <!-- お問い合わせ -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <h2>お問い合わせ・解約</h2>
+        </div>
+      </div>
+      <div class="card-body">
+        <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">解約・請求・改善要望などはこちらからお問い合わせください。</p>
+        <button class="btn btn-secondary" onclick="openInquiryForm()">お問い合わせフォームを開く</button>
+      </div>
+    </div>
+
   </div><!-- /#content -->
 </main>
 
@@ -1212,6 +1225,17 @@ async function updateUser(type) {
   } catch(e) {
     showResult('error', '変更に失敗しました。時間をおいて再試行してください。');
   }
+}
+
+// ── お問い合わせフォーム ──
+function openInquiryForm() {
+  const base = 'https://tally.so/r/A7bk0B';
+  const params = new URLSearchParams({
+    userId: currentUser.id || '',
+    email:  currentUser['確定配信先メール'] || '',
+    name:   currentUser['担当者氏名'] || ''
+  });
+  window.open(`${base}?${params.toString()}`, '_blank');
 }
 
 // ── Helpers ──
